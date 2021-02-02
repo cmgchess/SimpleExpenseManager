@@ -33,7 +33,7 @@ public class DBHelper extends SQLiteOpenHelper{
     @Override
     public void onCreate(SQLiteDatabase db) {
         String accountDDL = "CREATE TABLE " +ACCOUNT_TABLE+ " (accountNo TEXT(50) PRIMARY KEY,bankName TEXT(100) NOT NULL,accountHolderName TEXT(100) NOT NULL,balance REAL NOT NULL) ";
-        String transactionDDL = "CREATE TABLE " +TRANSACTION_TABLE+ " (accountNo TEXT(50) NOT NULL,date DATE NOT NULL,expenseType TEXT(10) NOT NULL,amount REAL NOT NULL,FOREIGN KEY (accountNo) REFERENCES "+ACCOUNT_TABLE+"(account_no))";
+        String transactionDDL = "CREATE TABLE " +TRANSACTION_TABLE+ " (id INTEGER PRIMARY KEY AUTOINCREMENT,accountNo TEXT(50) NOT NULL,date DATE NOT NULL,expenseType TEXT(10) NOT NULL,amount REAL NOT NULL,FOREIGN KEY (accountNo) REFERENCES "+ACCOUNT_TABLE+"(account_no))";
         db.execSQL(accountDDL);
         db.execSQL(transactionDDL);
     }
@@ -143,7 +143,7 @@ public class DBHelper extends SQLiteOpenHelper{
             queryString += "SELECT * FROM "+TRANSACTION_TABLE;
         }
         else {
-            queryString += "SELECT * FROM "+TRANSACTION_TABLE+" LIMIT "+limit;
+            queryString += "SELECT * FROM "+TRANSACTION_TABLE+" ORDER BY id DESC LIMIT "+limit;
         }
         Cursor cursor = db.rawQuery(queryString,null);
         if (cursor.getCount()==0){
@@ -153,15 +153,15 @@ public class DBHelper extends SQLiteOpenHelper{
         }
         else {
             while (cursor.moveToNext()){
-                String accountNo = cursor.getString(0);
+                String accountNo = cursor.getString(1);
                 Date date = new Date();
                 try {
-                    date = DATE_FORMAT.parse(cursor.getString(1));
+                    date = DATE_FORMAT.parse(cursor.getString(2));
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
-                ExpenseType expenseType = ExpenseType.valueOf(cursor.getString(2));
-                double amount = cursor.getDouble(3);
+                ExpenseType expenseType = ExpenseType.valueOf(cursor.getString(3));
+                double amount = cursor.getDouble(4);
                 transactionsList.add(new Transaction(date,accountNo,expenseType,amount));
             }
             cursor.close();
